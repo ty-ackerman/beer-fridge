@@ -1,6 +1,6 @@
 import React from "react";
 
-class AppName extends React.Component {
+class AdvancedSearch extends React.Component {
     render(){
         return (
             <React.Fragment>
@@ -10,4 +10,4 @@ class AppName extends React.Component {
     }
 }
 
-export default AppName;
+export default AdvancedSearch;

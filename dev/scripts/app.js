@@ -1,7 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import axios from "axios"
-import SimpleSearch from "./SimpleSearch"
+import React from "react";
+import ReactDOM from "react-dom";
+import axios from "axios";
+import SimpleSearch from "./SimpleSearch";
+import Suggestion from "./Suggestion";
+
+//API for flags by country https://restcountries.eu/#api-endpoints-language
 
 class App extends React.Component {
   constructor() {
@@ -9,17 +12,25 @@ class App extends React.Component {
     this.state = {
       results: {},
       alcName: "",
-    }
+      suggestion: ""
+    };
 
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.handleChange = this.handleChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.displaySuggestion = this.displaySuggestion.bind(this);
+    this.suggestionClick = this.suggestionClick.bind(this);
+    this.apiCall = this.apiCall.bind(this);
   }
-  
+
   //SEARCH FUNCTIONS
 
-  //this function will be called when the user submits their query. They will be able to search for their alcohol with advanced settings
+  //this function will be called when the user submits their query. If no results are displayed, the app will save an alcohol suggestion with similar spelling
   handleSubmit(e) {
     e.preventDefault();
+    this.apiCall();
+  }
+
+  apiCall() {
     axios({
       url: "https://lcboapi.com/products",
       params: {
@@ -28,10 +39,16 @@ class App extends React.Component {
         q: this.state.alcName
       }
     }).then(res => {
-      console.log(res)
-      this.setState({
-        results: res.data.result
-      }, () => {console.log(this.state.results)});
+      console.log(res);
+      this.setState(
+        {
+          results: res.data.result,
+          suggestion: res.data.suggestion
+        },
+        () => {
+          console.log(this.state.suggestion);
+        }
+      );
     });
   }
 
@@ -39,19 +56,45 @@ class App extends React.Component {
     let text = e.target.value;
     this.setState({
       alcName: text
-    })
+    });
   }
 
+  //If user enters alcohol that isn't recognized, the program will recommend an alternate spelling
+  displaySuggestion() {
+    if (this.state.suggestion) {
+      return (
+        <Suggestion
+          suggestion={this.state.suggestion}
+          suggestionClick={this.suggestionClick}
+        />
+      );
+    }
+  }
 
-
+  //If the user misspells their searched item (i.e. no results provided), they will be given a suggested beverage instead
+  suggestionClick() {
+    let suggestion = this.state.suggestion;
+    this.setState(
+      {
+        alcName: suggestion
+      },
+      () => {
+        this.apiCall();
+      }
+    );
+  }
 
   render() {
     return (
       <div>
-        <SimpleSearch handleSubmit = {this.handleSubmit} handleChange = {this.handleChange}/>
+        <SimpleSearch
+          handleSubmit={this.handleSubmit}
+          handleChange={this.handleChange}
+        />
+        {this.displaySuggestion()}
       </div>
-    )
+    );
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('app'));
+ReactDOM.render(<App />, document.getElementById("app"));
