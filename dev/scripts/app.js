@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import axios from "axios";
 import SimpleSearch from "./SimpleSearch";
 import Suggestion from "./Suggestion";
+import BeerDisplay from "./BeerDisplay";
 
 //API for flags by country https://restcountries.eu/#api-endpoints-language
 
@@ -15,11 +16,13 @@ class App extends React.Component {
       suggestion: ""
     };
 
+    //Binding functions
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.displaySuggestion = this.displaySuggestion.bind(this);
     this.suggestionClick = this.suggestionClick.bind(this);
     this.apiCall = this.apiCall.bind(this);
+    this.displayAlc = this.displayAlc.bind(this);
   }
 
   //SEARCH FUNCTIONS
@@ -30,6 +33,7 @@ class App extends React.Component {
     this.apiCall();
   }
 
+  //This function is the API call to the LCBO API
   apiCall() {
     axios({
       url: "https://lcboapi.com/products",
@@ -39,19 +43,14 @@ class App extends React.Component {
         q: this.state.alcName
       }
     }).then(res => {
-      console.log(res);
-      this.setState(
-        {
-          results: res.data.result,
-          suggestion: res.data.suggestion
-        },
-        () => {
-          console.log(this.state.suggestion);
-        }
-      );
+      this.setState({
+        results: res.data.result,
+        suggestion: res.data.suggestion
+      });
     });
   }
 
+  //Takes the input value from the searched beverage, and saves it in state
   handleChange(e) {
     let text = e.target.value;
     this.setState({
@@ -84,6 +83,13 @@ class App extends React.Component {
     );
   }
 
+  displayAlc() {
+    if (this.state.results) {
+      console.log(this.state.results);
+    }
+    return null;
+  }
+
   render() {
     return (
       <div>
@@ -92,6 +98,10 @@ class App extends React.Component {
           handleChange={this.handleChange}
         />
         {this.displaySuggestion()}
+        <BeerDisplay
+          results={this.state.results}
+          displayAlc={this.displayAlc}
+        />
       </div>
     );
   }
