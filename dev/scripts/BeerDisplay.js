@@ -13,7 +13,7 @@ class BeerDisplay extends React.Component {
                 <li key={key} className={alc.id}>
                   {alc.name} {alc.flag}
                 </li>
-                {/* <img src={() => alc.flag} alt="country flag" /> */}
+                <img src={alc.flag} alt="country flag" />
               </div>
             );
           })}

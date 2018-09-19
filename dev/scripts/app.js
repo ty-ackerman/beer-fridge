@@ -14,7 +14,8 @@ class App extends React.Component {
       results: {},
       resultsArray: [],
       alcName: "",
-      suggestion: ""
+      suggestion: "",
+      submitted: false
     };
 
     //Binding functions
@@ -33,8 +34,11 @@ class App extends React.Component {
   //this function will be called when the user submits their query. If no results are displayed, the app will save an alcohol suggestion with similar spelling
 
   handleSubmit(e) {
+    //Not really sure if this is needed more than to prevent default, but I'll keep it here just in case
     e.preventDefault();
-    this.apiCall();
+    this.setState({
+      submitted: true
+    });
   }
 
   //This function is the API call to the LCBO API
@@ -47,44 +51,42 @@ class App extends React.Component {
         q: this.state.alcName
       }
     }).then(res => {
-      this.setState(
-        {
-          results: res.data.result,
-          suggestion: res.data.suggestion
-        },
-        () => {
-          //Once the API call is made, the iterateThroughAlc function is called which will save the alc in an array
-          this.iterateThroughAlc();
-        }
-      );
+      this.setState({
+        results: res.data.result,
+        suggestion: res.data.suggestion
+      });
     });
+    console.log("here");
+    this.iterateThroughAlc();
   }
 
   flagApiCall(country, alc) {
     axios({
       url: `https://restcountries.eu/rest/v2/name/${country}`
-    }).then(
-      res => {
-        //This below will display all the data pretaining to country of the specific alcohol.
-        //For now, all I am returning is the flag of the country in question
-        let flag = res.data["0"].flag;
-        alc["flag"] = flag;
-      },
-      () => {}
-    );
+    }).then(res => {
+      //This below will display all the data pretaining to country of the specific alcohol.
+      //For now, all I am returning is the flag of the country in question
+      let flag = res.data["0"].flag;
+      alc["flag"] = flag;
+    });
   }
 
-  //Takes the input value from the searched beverage, and saves it in state
+  //Takes the input value from the searched beverage, and saves it in state -> new feature!!! when you type, it automatically searches the API for data. Super sweet dude.
   handleChange(e) {
-    let text = e.target.value;
-    this.setState({
-      alcName: text
-    });
+    let text = e.target.value.trim();
+    this.setState(
+      {
+        alcName: text
+      },
+      () => {
+        this.state.alcName.length > 0 ? this.apiCall() : null;
+      }
+    );
   }
 
   //If user enters alcohol that isn't recognized, the program will recommend an alternate spelling
   displaySuggestion() {
-    if (this.state.suggestion) {
+    if (this.state.suggestion && this.state.submitted) {
       return (
         <Suggestion
           suggestion={this.state.suggestion}
@@ -94,16 +96,14 @@ class App extends React.Component {
     }
   }
 
-  //If the user misspells their searched item (i.e. no results provided), they will be given a suggested beverage instead
+  //If the user misspells their searched item (i.e. no results provided), they will be given a suggested beverage instead. This changes the state of the alcname to the suggested one
   suggestionClick() {
     let suggestion = this.state.suggestion;
     this.setState(
       {
         alcName: suggestion
       },
-      () => {
-        this.apiCall();
-      }
+      () => this.apiCall()
     );
   }
 
@@ -121,17 +121,13 @@ class App extends React.Component {
 
       resultsArray.push(this.state.results[obj]);
     }
-    this.setState(
-      {
-        resultsArray
-      },
-      () => {
-        console.log(this.state.resultsArray);
-      }
-    );
+    this.setState({
+      resultsArray
+    });
   }
 
   originStrip(origin) {
+    //This function does exactly what it says, take the country of origin listed in the object, and returns just the country. no fluff added
     let country = "";
     for (let i in origin) {
       if (origin[i] != ",") {
@@ -151,7 +147,9 @@ class App extends React.Component {
           handleChange={this.handleChange}
         />
         {this.displaySuggestion()}
-        <BeerDisplay resultsArray={this.state.resultsArray} />
+        {this.state.alcName.length > 0 ? (
+          <BeerDisplay resultsArray={this.state.resultsArray} />
+        ) : null}
       </div>
     );
   }
