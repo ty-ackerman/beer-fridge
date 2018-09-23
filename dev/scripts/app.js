@@ -40,7 +40,7 @@ class App extends React.Component {
       submitted: true
     });
   }
-  //Test this
+
   //This function is the API call to the LCBO API
   apiCall() {
     axios({
