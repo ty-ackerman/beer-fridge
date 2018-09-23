@@ -40,7 +40,7 @@ class App extends React.Component {
       submitted: true
     });
   }
-
+  //Test this
   //This function is the API call to the LCBO API
   apiCall() {
     axios({
@@ -146,6 +146,7 @@ class App extends React.Component {
           handleSubmit={this.handleSubmit}
           handleChange={this.handleChange}
         />
+
         {this.displaySuggestion()}
         {this.state.alcName.length > 0 ? (
           <BeerDisplay resultsArray={this.state.resultsArray} />
